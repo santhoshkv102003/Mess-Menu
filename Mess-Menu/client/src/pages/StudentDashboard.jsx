@@ -5,14 +5,16 @@ import '../App.css';
 
 const StudentDashboard = () => {
     const { logout, user } = useAuth();
-    const [activeTab, setActiveTab] = useState('vote');
+    const [activeTab, setActiveTab] = useState('vote'); // vote, menu, feedback
     const [foodItems, setFoodItems] = useState([]);
-    const [selectedItems, setSelectedItems] = useState([]);
+    const [selectedItems, setSelectedItems] = useState([]); // IDs for monthly vote
     const [menu, setMenu] = useState(null);
 
     // For feedback/replacement
     const [dislikedItems, setDislikedItems] = useState([]);
     const [replacementItems, setReplacementItems] = useState([]);
+    const [activeCategory, setActiveCategory] = useState('Breakfast'); // For voting tab
+    const [feedbackCategory, setFeedbackCategory] = useState('Breakfast'); // For feedback tab
 
     useEffect(() => {
         fetchFoodItems();
@@ -21,7 +23,7 @@ const StudentDashboard = () => {
 
     const fetchFoodItems = async () => {
         try {
-            const res = await api.get('/admin/food-items'); // Assuming students can view this
+            const res = await api.get('/admin/food-items');
             setFoodItems(res.data);
         } catch (err) {
             console.error(err);
@@ -37,8 +39,6 @@ const StudentDashboard = () => {
             console.log('No menu found yet');
         }
     };
-
-    const [activeCategory, setActiveCategory] = useState('Breakfast');
 
     const toggleSelection = (id, list, setList, max) => {
         if (list.includes(id)) {
@@ -56,7 +56,6 @@ const StudentDashboard = () => {
         if (selectedItems.includes(id)) {
             setSelectedItems(selectedItems.filter(i => i !== id));
         } else {
-            // Check count for this specific category
             const currentCategorySelection = selectedItems.filter(itemId => {
                 const item = foodItems.find(f => f._id === itemId);
                 return item && item.category === category;
@@ -97,7 +96,7 @@ const StudentDashboard = () => {
         if (dislikedItems.length === 0) return;
         try {
             const month = new Date().toISOString().slice(0, 7);
-            await api.post('/student/feedback', { month, week: 1, dislikedItems }); // Hardcoded week 1 for demo
+            await api.post('/student/feedback', { month, week: 1, dislikedItems });
             alert('Feedback submitted!');
         } catch (err) {
             alert('Error submitting feedback');
@@ -115,27 +114,80 @@ const StudentDashboard = () => {
         }
     };
 
-    return (
-        <div>
-            <div className="dashboard-header">
-                <h2>Student Dashboard - {user.name}</h2>
-                <button onClick={logout} className="btn-primary" style={{ width: 'auto' }}>Logout</button>
+    const renderFoodItem = (item, isSelected, onClick) => (
+        <div
+            key={item._id}
+            className={`food-card ${isSelected ? 'selected' : ''}`}
+            onClick={onClick}
+            style={{ cursor: 'pointer' }}
+        >
+            <div
+                style={{
+                    height: '200px',
+                    width: '100%',
+                    backgroundImage: item.image ? `url(${item.image})` : 'none',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundColor: item.image ? 'transparent' : 'rgba(255,255,255,0.05)',
+                    position: 'relative'
+                }}
+            >
+
+
+                {/* Overlay for Text if Has Image */}
+                {item.image && (
+                    <div style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)',
+                        padding: '1rem',
+                        paddingTop: '3rem'
+                    }}>
+                        <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'white' }}>{item.name}</h3>
+                    </div>
+                )}
             </div>
 
-            <div className="container">
-                <div className="nav-tabs">
-                    <button className={`nav-btn ${activeTab === 'vote' ? 'active' : ''}`} onClick={() => setActiveTab('vote')}>Monthly Vote</button>
-                    <button className={`nav-btn ${activeTab === 'menu' ? 'active' : ''}`} onClick={() => setActiveTab('menu')}>View Menu</button>
-                    <button className={`nav-btn ${activeTab === 'feedback' ? 'active' : ''}`} onClick={() => setActiveTab('feedback')}>Weekly Feedback</button>
+            {!item.image && (
+                <div className="food-card-content">
+                    <h3>{item.name}</h3>
                 </div>
+            )}
+        </div>
+    );
+
+    return (
+        <div className="page-transition">
+            <header className="dashboard-header">
+                <div className="dashboard-brand">
+                    <h1>Student Portal</h1>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Welcome, {user.name}</p>
+                </div>
+                <button onClick={logout} className="btn btn-secondary">
+                    Logout
+                </button>
+            </header>
+
+            <div className="container">
+                <nav className="nav-tabs">
+                    <button className={`nav-btn ${activeTab === 'vote' ? 'active' : ''}`} onClick={() => setActiveTab('vote')}> Monthly Vote</button>
+                    <button className={`nav-btn ${activeTab === 'menu' ? 'active' : ''}`} onClick={() => setActiveTab('menu')}> View Menu</button>
+                    <button className={`nav-btn ${activeTab === 'feedback' ? 'active' : ''}`} onClick={() => setActiveTab('feedback')}> Weekly Feedback</button>
+                </nav>
 
                 {activeTab === 'vote' && (
-                    <div className="card">
-                        <h3>Vote for Monthly Menu</h3>
-                        <p style={{ marginBottom: '1rem', color: 'var(--text-muted)' }}>Select exactly 7 items from each category. (Total: {selectedItems.length}/28)</p>
+                    <div className="glass-panel" style={{ padding: '2rem' }}>
+                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                            <h2 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Monthly Menu Voting</h2>
+                            <p style={{ color: 'var(--text-muted)' }}>
+                                Select 7 items from each category. Total: <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{selectedItems.length}</span>/28
+                            </p>
+                        </div>
 
                         {/* Category Sub-tabs */}
-                        <div className="nav-tabs" style={{ borderBottom: 'none', marginBottom: '1.5rem', gap: '0.5rem' }}>
+                        <div className="nav-tabs" style={{ background: 'transparent', border: 'none', marginBottom: '2rem' }}>
                             {['Breakfast', 'Lunch', 'Snack', 'Dinner'].map(cat => {
                                 const count = selectedItems.filter(id => {
                                     const item = foodItems.find(f => f._id === id);
@@ -148,113 +200,83 @@ const StudentDashboard = () => {
                                         key={cat}
                                         className={`nav-btn ${activeCategory === cat ? 'active' : ''}`}
                                         onClick={() => setActiveCategory(cat)}
-                                        style={{
-                                            borderColor: isComplete ? 'var(--primary)' : 'transparent',
-                                            color: activeCategory === cat ? 'white' : (isComplete ? 'var(--primary)' : 'var(--text-muted)')
-                                        }}
+                                        style={activeCategory !== cat ? { border: isComplete ? '1px solid var(--success)' : '1px solid var(--glass-border)' } : {}}
                                     >
-                                        {cat} {isComplete ? '✓' : `(${count}/7)`}
+                                        {cat}
+                                        {isComplete && <span style={{ marginLeft: '0.5rem', color: 'var(--success)' }}>✓</span>}
+                                        {!isComplete && <span style={{ marginLeft: '0.5rem', opacity: 0.7 }}>({count}/7)</span>}
                                     </button>
                                 );
                             })}
                         </div>
 
-                        {/* Active Category Content */}
-                        <div>
-                            {/* Veg Section */}
-                            {foodItems.filter(item => item.category === activeCategory && (item.dietType === 'Veg' || !item.dietType)).length > 0 && (
-                                <>
-                                    <h4 style={{ marginBottom: '1rem', color: '#28a745' }}>🥦 Veg</h4>
-                                    <div className="food-grid" style={{ marginBottom: '2rem' }}>
-                                        {foodItems.filter(item => item.category === activeCategory && (item.dietType === 'Veg' || !item.dietType)).map(item => (
-                                            <div
-                                                key={item._id}
-                                                className={`food-card ${selectedItems.includes(item._id) ? 'selected' : ''}`}
-                                                onClick={() => toggleMonthlySelection(item._id, item.category)}
-                                                style={{
-                                                    cursor: 'pointer',
-                                                    backgroundImage: item.image ? `url(${item.image})` : 'none',
-                                                    backgroundSize: 'cover',
-                                                    backgroundPosition: 'center',
-                                                    color: item.image ? 'white' : 'inherit',
-                                                    padding: item.image ? 0 : '1.5rem'
-                                                }}
-                                            >
-                                                <div className="card-content-overlay" style={item.image ? {
-                                                    background: 'rgba(0,0,0,0.6)',
-                                                    height: '100%',
-                                                    width: '100%',
-                                                    padding: '1rem',
-                                                    borderRadius: 'var(--radius-lg)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    textAlign: 'center'
-                                                } : {}}>
-                                                    <strong style={{ fontSize: '1.5rem', lineHeight: '1.3' }}>{item.name}</strong>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </>
-                            )}
+                        {/* Veg Section */}
+                        {foodItems.filter(item => item.category === activeCategory && (item.dietType === 'Veg' || !item.dietType)).length > 0 && (
+                            <div style={{ marginBottom: '3rem' }}>
+                                <h4 style={{
+                                    marginBottom: '1.5rem',
+                                    color: 'var(--success)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    fontSize: '1.2rem'
+                                }}>
+                                    <span style={{ height: '8px', width: '8px', background: 'currentColor', borderRadius: '50%' }}></span>
+                                    Vegetarian Options
+                                </h4>
+                                <div className="food-grid">
+                                    {foodItems.filter(item => item.category === activeCategory && (item.dietType === 'Veg' || !item.dietType)).map(item => (
+                                        renderFoodItem(item, selectedItems.includes(item._id), () => toggleMonthlySelection(item._id, item.category))
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
-                            {/* Non-Veg Section */}
-                            {foodItems.filter(item => item.category === activeCategory && item.dietType === 'Non-Veg').length > 0 && (
-                                <>
-                                    <h4 style={{ marginBottom: '1rem', color: '#dc3545' }}>🍗 Non-Veg</h4>
-                                    <div className="food-grid">
-                                        {foodItems.filter(item => item.category === activeCategory && item.dietType === 'Non-Veg').map(item => (
-                                            <div
-                                                key={item._id}
-                                                className={`food-card ${selectedItems.includes(item._id) ? 'selected' : ''}`}
-                                                onClick={() => toggleMonthlySelection(item._id, item.category)}
-                                                style={{
-                                                    cursor: 'pointer',
-                                                    backgroundImage: item.image ? `url(${item.image})` : 'none',
-                                                    backgroundSize: 'cover',
-                                                    backgroundPosition: 'center',
-                                                    color: item.image ? 'white' : 'inherit',
-                                                    padding: item.image ? 0 : '1.5rem'
-                                                }}
-                                            >
-                                                <div className="card-content-overlay" style={item.image ? {
-                                                    background: 'rgba(0,0,0,0.6)',
-                                                    height: '100%',
-                                                    width: '100%',
-                                                    padding: '1rem',
-                                                    borderRadius: 'var(--radius-lg)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    textAlign: 'center'
-                                                } : {}}>
-                                                    <strong style={{ fontSize: '1.5rem', lineHeight: '1.3' }}>{item.name}</strong>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </>
-                            )}
+                        {/* Non-Veg Section */}
+                        {foodItems.filter(item => item.category === activeCategory && item.dietType === 'Non-Veg').length > 0 && (
+                            <div>
+                                <h4 style={{
+                                    marginBottom: '1.5rem',
+                                    color: 'var(--error)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    fontSize: '1.2rem'
+                                }}>
+                                    <span style={{ height: '8px', width: '8px', background: 'currentColor', borderRadius: '50%' }}></span>
+                                    Non-Vegetarian Options
+                                </h4>
+                                <div className="food-grid">
+                                    {foodItems.filter(item => item.category === activeCategory && item.dietType === 'Non-Veg').map(item => (
+                                        renderFoodItem(item, selectedItems.includes(item._id), () => toggleMonthlySelection(item._id, item.category))
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div style={{ marginTop: '3rem', display: 'flex', justifyContent: 'center' }}>
+                            <button onClick={submitMonthlyVote} className="btn btn-primary" style={{ minWidth: '200px' }}>
+                                Submit Final Vote
+                            </button>
                         </div>
-
-                        <button onClick={submitMonthlyVote} className="btn-primary" style={{ marginTop: '2rem', width: '100%' }}>Submit Monthly Vote</button>
                     </div>
                 )}
 
                 {activeTab === 'menu' && (
-                    <div className="card">
-                        <h3>Current Menu</h3>
+                    <div className="glass-panel" style={{ padding: '2rem' }}>
+                        <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+                            <h3>Current Menu</h3>
+                        </div>
                         {menu ? (
                             <div style={{ overflowX: 'auto' }}>
-                                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+                                <table className="glass-table">
                                     <thead>
                                         <tr>
-                                            <th style={{ border: '1px solid var(--glass-border)', padding: '0.8rem' }}>Day</th>
-                                            <th style={{ border: '1px solid var(--glass-border)', padding: '0.8rem' }}>Breakfast</th>
-                                            <th style={{ border: '1px solid var(--glass-border)', padding: '0.8rem' }}>Lunch</th>
-                                            <th style={{ border: '1px solid var(--glass-border)', padding: '0.8rem' }}>Snack</th>
-                                            <th style={{ border: '1px solid var(--glass-border)', padding: '0.8rem' }}>Dinner</th>
+                                            <th>Day</th>
+                                            <th>Breakfast</th>
+                                            <th>Lunch</th>
+                                            <th>Snack</th>
+                                            <th>Dinner</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -262,95 +284,75 @@ const StudentDashboard = () => {
                                             const dayItems = menu.items.slice(index * 4, (index + 1) * 4);
                                             return (
                                                 <tr key={day}>
-                                                    <td style={{ border: '1px solid var(--glass-border)', padding: '0.8rem', fontWeight: 'bold' }}>{day}</td>
-                                                    <td style={{ border: '1px solid var(--glass-border)', padding: '0.8rem' }}>{dayItems[0]?.name || '-'}</td>
-                                                    <td style={{ border: '1px solid var(--glass-border)', padding: '0.8rem' }}>{dayItems[1]?.name || '-'}</td>
-                                                    <td style={{ border: '1px solid var(--glass-border)', padding: '0.8rem' }}>{dayItems[2]?.name || '-'}</td>
-                                                    <td style={{ border: '1px solid var(--glass-border)', padding: '0.8rem' }}>{dayItems[3]?.name || '-'}</td>
+                                                    <td style={{ fontWeight: 'bold', color: 'var(--primary)' }}>{day}</td>
+                                                    <td>{dayItems[0]?.name || '-'}</td>
+                                                    <td>{dayItems[1]?.name || '-'}</td>
+                                                    <td>{dayItems[2]?.name || '-'}</td>
+                                                    <td>{dayItems[3]?.name || '-'}</td>
                                                 </tr>
                                             );
                                         })}
                                     </tbody>
                                 </table>
                             </div>
-                        ) : <p>No menu active for this month.</p>}
+                        ) : <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No active menu for this month yet.</p>}
                     </div>
                 )}
 
                 {activeTab === 'feedback' && (
-                    <div className="card">
-                        <h3>Weekly Feedback - Disliked Items (Max 3)</h3>
-                        {menu ? (
-                            <div>
-                                <div className="food-grid">
-                                    {menu.items.map(item => (
-                                        <div
-                                            key={item._id}
-                                            className={`food-card ${dislikedItems.includes(item._id) ? 'selected' : ''}`}
-                                            onClick={() => toggleSelection(item._id, dislikedItems, setDislikedItems, 3)}
-                                            style={{
-                                                cursor: 'pointer',
-                                                borderColor: dislikedItems.includes(item._id) ? 'red' : '#eee',
-                                                backgroundImage: item.image ? `url(${item.image})` : 'none',
-                                                backgroundSize: 'cover',
-                                                backgroundPosition: 'center',
-                                                color: item.image ? 'white' : 'inherit',
-                                                padding: item.image ? 0 : '1.5rem'
-                                            }}
-                                        >
-                                            <div className="card-content-overlay" style={item.image ? {
-                                                background: 'rgba(0,0,0,0.6)',
-                                                height: '100%',
-                                                width: '100%',
-                                                padding: '1rem',
-                                                borderRadius: 'var(--radius-lg)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                textAlign: 'center'
-                                            } : {}}>
-                                                <strong style={{ fontSize: '1.5rem', lineHeight: '1.3' }}>{item.name}</strong>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <button onClick={submitFeedback} className="btn-primary" style={{ marginTop: '1rem', background: '#dc3545' }}>Submit Feedback</button>
-                            </div>
-                        ) : <p>No menu to differentiate.</p>}
-
-                        <h3 style={{ marginTop: '2rem' }}>Vote Replacements (Max 3)</h3>
-                        <div className="food-grid">
-                            {foodItems.filter(i => menu ? !menu.items.find(m => m._id === i._id) : true).map(item => (
-                                <div
-                                    key={item._id}
-                                    className={`food-card ${replacementItems.includes(item._id) ? 'selected' : ''}`}
-                                    onClick={() => toggleSelection(item._id, replacementItems, setReplacementItems, 3)}
-                                    style={{
-                                        cursor: 'pointer',
-                                        backgroundImage: item.image ? `url(${item.image})` : 'none',
-                                        backgroundSize: 'cover',
-                                        backgroundPosition: 'center',
-                                        color: item.image ? 'white' : 'inherit',
-                                        padding: item.image ? 0 : '1.5rem'
-                                    }}
-                                >
-                                    <div className="card-content-overlay" style={item.image ? {
-                                        background: 'rgba(0,0,0,0.6)',
-                                        height: '100%',
-                                        width: '100%',
-                                        padding: '1rem',
-                                        borderRadius: 'var(--radius-lg)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        textAlign: 'center'
-                                    } : {}}>
-                                        <strong style={{ fontSize: '1.5rem', lineHeight: '1.3' }}>{item.name}</strong>
-                                    </div>
-                                </div>
-                            ))}
+                    <div style={{ display: 'grid', gap: '2rem' }}>
+                        {/* Category Filter for Feedback Section */}
+                        <div className="glass-panel" style={{ padding: '1rem', display: 'flex', justifyContent: 'center' }}>
+                            <nav className="nav-tabs" style={{ margin: 0 }}>
+                                {['Breakfast', 'Lunch', 'Snack', 'Dinner'].map(cat => (
+                                    <button
+                                        key={cat}
+                                        className={`nav-btn ${feedbackCategory === cat ? 'active' : ''}`}
+                                        onClick={() => setFeedbackCategory(cat)}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </nav>
                         </div>
-                        <button onClick={submitReplacement} className="btn-primary" style={{ marginTop: '1rem', background: '#28a745' }}>Vote Replacement</button>
+
+                        <div className="glass-panel" style={{ padding: '2rem' }}>
+                            <h3 style={{ marginBottom: '1.5rem' }}>Weekly Feedback - {feedbackCategory}</h3>
+                            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Select items from this week's <strong>{feedbackCategory}</strong> menu that you didn't like.</p>
+
+                            {menu ? (
+                                <div>
+                                    <div className="food-grid">
+                                        {menu.items
+                                            .filter(item => item.category === feedbackCategory)
+                                            .map(item => (
+                                                renderFoodItem(item, dislikedItems.includes(item._id), () => toggleSelection(item._id, dislikedItems, setDislikedItems, 3))
+                                            ))}
+                                        {menu.items.filter(item => item.category === feedbackCategory).length === 0 && (
+                                            <p style={{ color: 'var(--text-muted)', colSpan: 'full' }}>No {feedbackCategory} items in this weeks menu.</p>
+                                        )}
+                                    </div>
+                                    <button onClick={submitFeedback} className="btn btn-primary" style={{ marginTop: '2rem', background: 'var(--error)', borderColor: 'transparent' }}>
+                                        Submit Negative Feedback
+                                    </button>
+                                </div>
+                            ) : <p>No menu to differentiate.</p>}
+                        </div>
+
+                        <div className="glass-panel" style={{ padding: '2rem' }}>
+                            <h3 style={{ marginBottom: '1.5rem' }}>Vote Replacements - {feedbackCategory}</h3>
+                            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Select items you'd like to see for <strong>{feedbackCategory}</strong> next week.</p>
+                            <div className="food-grid">
+                                {foodItems
+                                    .filter(i => (menu ? !menu.items.find(m => m._id === i._id) : true) && i.category === feedbackCategory)
+                                    .map(item => (
+                                        renderFoodItem(item, replacementItems.includes(item._id), () => toggleSelection(item._id, replacementItems, setReplacementItems, 3))
+                                    ))}
+                            </div>
+                            <button onClick={submitReplacement} className="btn btn-primary" style={{ marginTop: '2rem', background: 'var(--success)', borderColor: 'transparent' }}>
+                                Vote For Replacements
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

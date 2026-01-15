@@ -20,30 +20,43 @@ const Login = () => {
     };
 
     return (
-        <div className="auth-container">
-            <form onSubmit={handleSubmit} className="auth-form">
-                <h2>Smart Mess Login</h2>
-                <div className="form-group">
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        className="form-input"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    />
+        <div className="auth-container page-transition">
+            <div className="auth-card">
+                <div className="auth-header">
+                    <h2>Smart Mess Login</h2>
+                    <p style={{ color: 'var(--text-muted)' }}>Welcome back, please login to your account</p>
                 </div>
-                <div className="form-group">
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        className="form-input"
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    />
-                </div>
-                <button type="submit" className="btn-primary">Login</button>
-                <Link to="/register" className="auth-link">Register as Student</Link>
-            </form>
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Email Address</label>
+                        <input
+                            type="email"
+                            placeholder="Enter your email"
+                            className="form-input"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>Password</label>
+                        <input
+                            type="password"
+                            placeholder="Enter your password"
+                            className="form-input"
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
+                        Login to Dashboard
+                    </button>
+                    <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                        <Link to="/register" className="auth-link" style={{ color: 'var(--primary)' }}>
+                            New Student? <span style={{ textDecoration: 'underline' }}>Create Account</span>
+                        </Link>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };

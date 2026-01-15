@@ -20,49 +20,61 @@ const Register = () => {
     };
 
     return (
-        <div className="auth-container">
-            <form onSubmit={handleSubmit} className="auth-form">
-                <h2>Register</h2>
-                <div className="form-group">
-                    <input
-                        type="text"
-                        placeholder="Name"
-                        className="form-input"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    />
+        <div className="auth-container page-transition">
+            <div className="auth-card">
+                <div className="auth-header">
+                    <h2>Create Account</h2>
+                    <p style={{ color: 'var(--text-muted)' }}>Join the mess management system</p>
                 </div>
-                <div className="form-group">
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        className="form-input"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    />
-                </div>
-                <div className="form-group">
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        className="form-input"
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    />
-                </div>
-                <div className="form-group">
-                    <select
-                        className="form-input"
-                        value={formData.role}
-                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    >
-                        <option value="student">Student</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-                <button type="submit" className="btn-primary">Register</button>
-                <Link to="/login" className="auth-link">Already have an account? Login</Link>
-            </form>
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <input
+                            type="text"
+                            placeholder="Full Name"
+                            className="form-input"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <input
+                            type="email"
+                            placeholder="Email Address"
+                            className="form-input"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            className="form-input"
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <select
+                            className="form-input"
+                            value={formData.role}
+                            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <option value="student">Student</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
+                        Register Now
+                    </button>
+                    <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                        <Link to="/login" className="auth-link" style={{ color: 'var(--text-muted)' }}>
+                            Already have an account? <span style={{ color: 'var(--primary)' }}>Login</span>
+                        </Link>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
