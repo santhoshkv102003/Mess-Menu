@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-import '../App.css';
+// import '../App.css'; // Commenting out to prefer Tailwind styles
 
 const StudentDashboard = () => {
     const { logout, user } = useAuth();
@@ -16,10 +16,23 @@ const StudentDashboard = () => {
     const [activeCategory, setActiveCategory] = useState('Breakfast'); // For voting tab
     const [feedbackCategory, setFeedbackCategory] = useState('Breakfast'); // For feedback tab
 
+    // Dark mode state
+    const [darkMode, setDarkMode] = useState(false);
+
     useEffect(() => {
         fetchFoodItems();
         fetchMenu();
+        // Check system preference or localStorage for dark mode in a real app
     }, []);
+
+    const toggleDarkMode = () => {
+        setDarkMode(!darkMode);
+        if (!darkMode) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    };
 
     const fetchFoodItems = async () => {
         try {
@@ -98,6 +111,7 @@ const StudentDashboard = () => {
             const month = new Date().toISOString().slice(0, 7);
             await api.post('/student/feedback', { month, week: 1, dislikedItems });
             alert('Feedback submitted!');
+            setDislikedItems([]);
         } catch (err) {
             alert('Error submitting feedback');
         }
@@ -109,253 +123,355 @@ const StudentDashboard = () => {
             const month = new Date().toISOString().slice(0, 7);
             await api.post('/student/vote-replacement', { month, week: 1, replacementItems });
             alert('Replacement vote submitted!');
+            setReplacementItems([]);
         } catch (err) {
             alert('Error submitting replacement vote');
         }
     };
 
-    const renderFoodItem = (item, isSelected, onClick) => (
+    // Helper to get current category count for progress bar
+    const getCurrentCategoryCount = () => {
+        return selectedItems.filter(id => {
+            const item = foodItems.find(f => f._id === id);
+            return item && item.category === activeCategory;
+        }).length;
+    };
+
+    const renderFoodCard = (item, isSelected, onClick, isVotedView = false) => (
         <div
             key={item._id}
-            className={`food-card ${isSelected ? 'selected' : ''}`}
+            className={`group relative bg-white dark:bg-slate-800 border ${isSelected ? 'border-2 border-primary' : 'border-slate-200 dark:border-slate-700'} rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200`}
             onClick={onClick}
-            style={{ cursor: 'pointer' }}
         >
-            <div
-                style={{
-                    height: '200px',
-                    width: '100%',
-                    backgroundImage: item.image ? `url(${item.image})` : 'none',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundColor: item.image ? 'transparent' : 'rgba(255,255,255,0.05)',
-                    position: 'relative'
-                }}
-            >
+            <div className="relative aspect-square overflow-hidden cursor-pointer">
+                {item.image ? (
+                    <img
+                        alt={item.name}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        src={item.image}
+                    />
+                ) : (
+                    <div className="w-full h-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-400">
+                        <span className="material-symbols-outlined text-4xl">restaurant</span>
+                    </div>
+                )}
 
-
-                {/* Overlay for Text if Has Image */}
-                {item.image && (
-                    <div style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)',
-                        padding: '1rem',
-                        paddingTop: '3rem'
-                    }}>
-                        <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'white' }}>{item.name}</h3>
+                {isSelected && (
+                    <div className="absolute top-2 right-2 bg-primary text-white p-0.5 rounded-full shadow-lg">
+                        <span className="material-symbols-outlined text-[16px]">check_circle</span>
                     </div>
                 )}
             </div>
 
-            {!item.image && (
-                <div className="food-card-content">
-                    <h3>{item.name}</h3>
-                </div>
-            )}
+            <div className={`p-2.5 ${isSelected ? 'bg-primary/5 dark:bg-primary/10' : 'bg-white dark:bg-slate-800'}`}>
+                <h3 className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate mb-2">{item.name}</h3>
+                <button className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all duration-200 ${isSelected
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'bg-slate-50 dark:bg-slate-700/50 hover:bg-primary/10 hover:text-primary border border-slate-200 dark:border-slate-600'
+                    }`}>
+                    {isSelected ? (
+                        <>
+                            <span className="material-symbols-outlined text-[18px]">check</span>
+                            <span className="text-xs font-black uppercase tracking-tight">{isVotedView ? 'Selected' : 'Voted'}</span>
+                        </>
+                    ) : (
+                        <>
+                            <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                            <span className="text-xs font-black uppercase tracking-tight">{isVotedView ? 'Select' : 'Vote'}</span>
+                        </>
+                    )}
+                </button>
+            </div>
         </div>
     );
 
     return (
-        <div className="page-transition">
-            <header className="dashboard-header">
-                <div className="dashboard-brand">
-                    <h1>Student Portal</h1>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Welcome, {user.name}</p>
+        <div className="flex h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 overflow-hidden font-display">
+            {/* Sidebar */}
+            <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-screen shrink-0 hidden md:flex">
+                <div className="p-6">
+                    <div className="flex items-center gap-2 mb-8">
+                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+                            <span className="material-icons-round text-xl">restaurant</span>
+                        </div>
+                        <span className="text-xl font-bold tracking-tight">Smart Mess</span>
+                    </div>
+                    <nav className="space-y-1">
+                        {/* <a className={`sidebar-item ${activeTab === 'home' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`} href="#" onClick={() => setActiveTab('vote')}>
+                            <span className="material-symbols-outlined">home</span>
+                            <span className="font-medium">Home</span>
+                        </a> */}
+                        <button className={`sidebar-item w-full ${activeTab === 'vote' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`} onClick={() => setActiveTab('vote')}>
+                            <span className="material-symbols-outlined">how_to_vote</span>
+                            <span className="font-medium">Vote</span>
+                        </button>
+                        <button className={`sidebar-item w-full ${activeTab === 'menu' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`} onClick={() => setActiveTab('menu')}>
+                            <span className="material-symbols-outlined">restaurant_menu</span>
+                            <span className="font-medium">Menu</span>
+                        </button>
+                        <button className={`sidebar-item w-full ${activeTab === 'feedback' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`} onClick={() => setActiveTab('feedback')}>
+                            <span className="material-symbols-outlined">chat_bubble</span>
+                            <span className="font-medium">Feedback</span>
+                        </button>
+                        {/* <button className="sidebar-item w-full text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+                            <span className="material-symbols-outlined">person</span>
+                            <span className="font-medium">Profile</span>
+                        </button> */}
+                    </nav>
                 </div>
-                <button onClick={logout} className="btn btn-secondary">
-                    Logout
-                </button>
-            </header>
+                <div className="mt-auto p-6 border-t border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 overflow-hidden">
+                            <span className="material-symbols-outlined">person</span>
+                        </div>
+                        <div>
+                            <p className="text-sm font-semibold truncate max-w-[120px]">{user?.name || 'Student'}</p>
+                            <p className="text-xs text-slate-500">Student</p>
+                        </div>
+                    </div>
+                    <button onClick={logout} className="flex items-center gap-2 text-slate-500 hover:text-red-500 transition-colors w-full">
+                        <span className="material-symbols-outlined text-[20px]">logout</span>
+                        <span className="text-sm font-medium">Logout</span>
+                    </button>
+                </div>
+            </aside>
 
-            <div className="container">
-                <nav className="nav-tabs">
-                    <button className={`nav-btn ${activeTab === 'vote' ? 'active' : ''}`} onClick={() => setActiveTab('vote')}> Monthly Vote</button>
-                    <button className={`nav-btn ${activeTab === 'menu' ? 'active' : ''}`} onClick={() => setActiveTab('menu')}> View Menu</button>
-                    <button className={`nav-btn ${activeTab === 'feedback' ? 'active' : ''}`} onClick={() => setActiveTab('feedback')}> Weekly Feedback</button>
-                </nav>
-
-                {activeTab === 'vote' && (
-                    <div className="glass-panel" style={{ padding: '2rem' }}>
-                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                            <h2 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Monthly Menu Voting</h2>
-                            <p style={{ color: 'var(--text-muted)' }}>
-                                Select 7 items from each category. Total: <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{selectedItems.length}</span>/28
-                            </p>
+            {/* Main Content */}
+            <main className="flex-1 flex flex-col min-h-0 relative">
+                {/* Header */}
+                <header className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-6 sticky top-0 z-20">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <div>
+                            <h1 className="text-2xl font-black tracking-tight uppercase">Rapid Selection Board</h1>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5 font-medium">Quick tap to vote for next month's menu.</p>
                         </div>
 
-                        {/* Category Sub-tabs */}
-                        <div className="nav-tabs" style={{ background: 'transparent', border: 'none', marginBottom: '2rem' }}>
-                            {['Breakfast', 'Lunch', 'Snack', 'Dinner'].map(cat => {
-                                const count = selectedItems.filter(id => {
-                                    const item = foodItems.find(f => f._id === id);
-                                    return item && item.category === cat;
-                                }).length;
-                                const isComplete = count === 7;
+                        {(activeTab === 'vote' || activeTab === 'feedback') && (
+                            <div className="flex flex-col sm:flex-row items-center gap-6">
+                                {activeTab === 'vote' && (
+                                    <div className="w-full sm:w-auto">
+                                        <div className="flex items-center justify-between sm:justify-end gap-3 mb-2">
+                                            <span className="text-xs font-bold text-primary uppercase tracking-wider">{getCurrentCategoryCount()} of 7 Selected</span>
+                                            <span className="text-xs font-bold text-slate-400 uppercase">{activeCategory}</span>
+                                        </div>
+                                        <div className="w-full sm:w-56 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                            <div
+                                                className="bg-primary h-full rounded-full transition-all duration-300"
+                                                style={{ width: `${(getCurrentCategoryCount() / 7) * 100}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                )}
 
-                                return (
-                                    <button
-                                        key={cat}
-                                        className={`nav-btn ${activeCategory === cat ? 'active' : ''}`}
-                                        onClick={() => setActiveCategory(cat)}
-                                        style={activeCategory !== cat ? { border: isComplete ? '1px solid var(--success)' : '1px solid var(--glass-border)' } : {}}
-                                    >
-                                        {cat}
-                                        {isComplete && <span style={{ marginLeft: '0.5rem', color: 'var(--success)' }}>✓</span>}
-                                        {!isComplete && <span style={{ marginLeft: '0.5rem', opacity: 0.7 }}>({count}/7)</span>}
-                                    </button>
-                                );
-                            })}
-                        </div>
-
-                        {/* Veg Section */}
-                        {foodItems.filter(item => item.category === activeCategory && (item.dietType === 'Veg' || !item.dietType)).length > 0 && (
-                            <div style={{ marginBottom: '3rem' }}>
-                                <h4 style={{
-                                    marginBottom: '1.5rem',
-                                    color: 'var(--success)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem',
-                                    fontSize: '1.2rem'
-                                }}>
-                                    <span style={{ height: '8px', width: '8px', background: 'currentColor', borderRadius: '50%' }}></span>
-                                    Vegetarian Options
-                                </h4>
-                                <div className="food-grid">
-                                    {foodItems.filter(item => item.category === activeCategory && (item.dietType === 'Veg' || !item.dietType)).map(item => (
-                                        renderFoodItem(item, selectedItems.includes(item._id), () => toggleMonthlySelection(item._id, item.category))
-                                    ))}
+                                <div className="flex bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-xl w-full sm:w-auto overflow-x-auto">
+                                    {['Breakfast', 'Lunch', 'Snack', 'Dinner'].map(cat => {
+                                        const isSelected = (activeTab === 'vote' ? activeCategory : feedbackCategory) === cat;
+                                        return (
+                                            <button
+                                                key={cat}
+                                                onClick={() => activeTab === 'vote' ? setActiveCategory(cat) : setFeedbackCategory(cat)}
+                                                className={`flex-1 sm:flex-none px-5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${isSelected
+                                                        ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white'
+                                                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                                    }`}
+                                            >
+                                                {cat}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
+                    </div>
+                </header>
 
-                        {/* Non-Veg Section */}
-                        {foodItems.filter(item => item.category === activeCategory && item.dietType === 'Non-Veg').length > 0 && (
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 scrollbar-hide pb-32">
+
+                    {/* VOTING TAB */}
+                    {activeTab === 'vote' && (
+                        <div className="space-y-10">
+                            {/* Vegetarian Section */}
                             <div>
-                                <h4 style={{
-                                    marginBottom: '1.5rem',
-                                    color: 'var(--error)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem',
-                                    fontSize: '1.2rem'
-                                }}>
-                                    <span style={{ height: '8px', width: '8px', background: 'currentColor', borderRadius: '50%' }}></span>
-                                    Non-Vegetarian Options
-                                </h4>
-                                <div className="food-grid">
-                                    {foodItems.filter(item => item.category === activeCategory && item.dietType === 'Non-Veg').map(item => (
-                                        renderFoodItem(item, selectedItems.includes(item._id), () => toggleMonthlySelection(item._id, item.category))
-                                    ))}
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-1.5 h-6 bg-secondary rounded-full"></div>
+                                    <h2 className="text-base font-black uppercase tracking-widest text-slate-500">Vegetarian</h2>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4">
+                                    {foodItems
+                                        .filter(item => item.category === activeCategory && (item.dietType === 'Veg' || !item.dietType))
+                                        .map(item => renderFoodCard(
+                                            item,
+                                            selectedItems.includes(item._id),
+                                            () => toggleMonthlySelection(item._id, item.category)
+                                        ))
+                                    }
+                                    {foodItems.filter(item => item.category === activeCategory && (item.dietType === 'Veg' || !item.dietType)).length === 0 && (
+                                        <p className="text-slate-400 text-sm">No vegetarian items found.</p>
+                                    )}
                                 </div>
                             </div>
-                        )}
 
-                        <div style={{ marginTop: '3rem', display: 'flex', justifyContent: 'center' }}>
-                            <button onClick={submitMonthlyVote} className="btn btn-primary" style={{ minWidth: '200px' }}>
-                                Submit Final Vote
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'menu' && (
-                    <div className="glass-panel" style={{ padding: '2rem' }}>
-                        <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-                            <h3>Current Menu</h3>
-                        </div>
-                        {menu ? (
-                            <div style={{ overflowX: 'auto' }}>
-                                <table className="glass-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Day</th>
-                                            <th>Breakfast</th>
-                                            <th>Lunch</th>
-                                            <th>Snack</th>
-                                            <th>Dinner</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => {
-                                            const dayItems = menu.items.slice(index * 4, (index + 1) * 4);
-                                            return (
-                                                <tr key={day}>
-                                                    <td style={{ fontWeight: 'bold', color: 'var(--primary)' }}>{day}</td>
-                                                    <td>{dayItems[0]?.name || '-'}</td>
-                                                    <td>{dayItems[1]?.name || '-'}</td>
-                                                    <td>{dayItems[2]?.name || '-'}</td>
-                                                    <td>{dayItems[3]?.name || '-'}</td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ) : <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No active menu for this month yet.</p>}
-                    </div>
-                )}
-
-                {activeTab === 'feedback' && (
-                    <div style={{ display: 'grid', gap: '2rem' }}>
-                        {/* Category Filter for Feedback Section */}
-                        <div className="glass-panel" style={{ padding: '1rem', display: 'flex', justifyContent: 'center' }}>
-                            <nav className="nav-tabs" style={{ margin: 0 }}>
-                                {['Breakfast', 'Lunch', 'Snack', 'Dinner'].map(cat => (
-                                    <button
-                                        key={cat}
-                                        className={`nav-btn ${feedbackCategory === cat ? 'active' : ''}`}
-                                        onClick={() => setFeedbackCategory(cat)}
-                                    >
-                                        {cat}
-                                    </button>
-                                ))}
-                            </nav>
-                        </div>
-
-                        <div className="glass-panel" style={{ padding: '2rem' }}>
-                            <h3 style={{ marginBottom: '1.5rem' }}>Weekly Feedback - {feedbackCategory}</h3>
-                            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Select items from this week's <strong>{feedbackCategory}</strong> menu that you didn't like.</p>
-
-                            {menu ? (
+                            {/* Non-Vegetarian Section */}
+                            {foodItems.filter(item => item.category === activeCategory && item.dietType === 'Non-Veg').length > 0 && (
                                 <div>
-                                    <div className="food-grid">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-1.5 h-6 bg-red-500 rounded-full"></div>
+                                        <h2 className="text-base font-black uppercase tracking-widest text-slate-500">Non-Vegetarian</h2>
+                                    </div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4">
+                                        {foodItems
+                                            .filter(item => item.category === activeCategory && item.dietType === 'Non-Veg')
+                                            .map(item => renderFoodCard(
+                                                item,
+                                                selectedItems.includes(item._id),
+                                                () => toggleMonthlySelection(item._id, item.category)
+                                            ))
+                                        }
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Submit Button (Floating) */}
+                            <div className="fixed bottom-8 right-8 z-30">
+                                <button
+                                    onClick={submitMonthlyVote}
+                                    className="bg-primary text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest shadow-2xl shadow-primary/40 flex items-center gap-3 transform transition-all hover:scale-105 active:scale-95"
+                                >
+                                    <span className="material-symbols-outlined">send</span>
+                                    <span>Submit Final Vote</span>
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MENU TAB */}
+                    {activeTab === 'menu' && (
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                                <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                                    <h2 className="text-xl font-bold">Menu for {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
+                                </div>
+                                {menu ? (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left text-sm">
+                                            <thead className="bg-slate-50 dark:bg-slate-900/50">
+                                                <tr>
+                                                    <th className="p-4 font-bold text-slate-500 uppercase text-xs tracking-wider">Day</th>
+                                                    <th className="p-4 font-bold text-slate-500 uppercase text-xs tracking-wider">Breakfast</th>
+                                                    <th className="p-4 font-bold text-slate-500 uppercase text-xs tracking-wider">Lunch</th>
+                                                    <th className="p-4 font-bold text-slate-500 uppercase text-xs tracking-wider">Snack</th>
+                                                    <th className="p-4 font-bold text-slate-500 uppercase text-xs tracking-wider">Dinner</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                                                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => {
+                                                    const dayItems = menu.items.slice(index * 4, (index + 1) * 4);
+                                                    return (
+                                                        <tr key={day} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                                            <td className="p-4 font-bold text-primary">{day}</td>
+                                                            <td className="p-4">{dayItems[0]?.name || '-'}</td>
+                                                            <td className="p-4">{dayItems[1]?.name || '-'}</td>
+                                                            <td className="p-4">{dayItems[2]?.name || '-'}</td>
+                                                            <td className="p-4">{dayItems[3]?.name || '-'}</td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ) : (
+                                    <div className="p-12 text-center text-slate-500">
+                                        <span className="material-symbols-outlined text-4xl mb-2">restaurant_menu</span>
+                                        <p>No menu active for this month.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* FEEDBACK TAB */}
+                    {activeTab === 'feedback' && (
+                        <div className="space-y-12">
+                            {/* Negative Feedback Section */}
+                            <div>
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-1.5 h-6 bg-red-400 rounded-full"></div>
+                                    <div>
+                                        <h2 className="text-base font-black uppercase tracking-widest text-slate-500">Dislike Items</h2>
+                                        <p className="text-xs text-slate-400">Select items you didn't enjoy this week</p>
+                                    </div>
+                                </div>
+
+                                {menu ? (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                                         {menu.items
                                             .filter(item => item.category === feedbackCategory)
-                                            .map(item => (
-                                                renderFoodItem(item, dislikedItems.includes(item._id), () => toggleSelection(item._id, dislikedItems, setDislikedItems, 3))
-                                            ))}
+                                            .map(item => renderFoodCard(
+                                                item,
+                                                dislikedItems.includes(item._id),
+                                                () => toggleSelection(item._id, dislikedItems, setDislikedItems, 3),
+                                                true
+                                            ))
+                                        }
                                         {menu.items.filter(item => item.category === feedbackCategory).length === 0 && (
-                                            <p style={{ color: 'var(--text-muted)', colSpan: 'full' }}>No {feedbackCategory} items in this weeks menu.</p>
+                                            <p className="text-slate-400">No items in the menu for this category.</p>
                                         )}
                                     </div>
-                                    <button onClick={submitFeedback} className="btn btn-primary" style={{ marginTop: '2rem', background: 'var(--error)', borderColor: 'transparent' }}>
+                                ) : <p className="text-slate-400">No menu available.</p>}
+
+                                {dislikedItems.length > 0 && (
+                                    <button
+                                        onClick={submitFeedback}
+                                        className="mt-6 bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold uppercase tracking-wide text-xs shadow-lg shadow-red-500/20 transition-all"
+                                    >
                                         Submit Negative Feedback
                                     </button>
-                                </div>
-                            ) : <p>No menu to differentiate.</p>}
-                        </div>
-
-                        <div className="glass-panel" style={{ padding: '2rem' }}>
-                            <h3 style={{ marginBottom: '1.5rem' }}>Vote Replacements - {feedbackCategory}</h3>
-                            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Select items you'd like to see for <strong>{feedbackCategory}</strong> next week.</p>
-                            <div className="food-grid">
-                                {foodItems
-                                    .filter(i => (menu ? !menu.items.find(m => m._id === i._id) : true) && i.category === feedbackCategory)
-                                    .map(item => (
-                                        renderFoodItem(item, replacementItems.includes(item._id), () => toggleSelection(item._id, replacementItems, setReplacementItems, 3))
-                                    ))}
+                                )}
                             </div>
-                            <button onClick={submitReplacement} className="btn btn-primary" style={{ marginTop: '2rem', background: 'var(--success)', borderColor: 'transparent' }}>
-                                Vote For Replacements
-                            </button>
+
+                            {/* Replacement Vote Section */}
+                            <div>
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-1.5 h-6 bg-secondary rounded-full"></div>
+                                    <div>
+                                        <h2 className="text-base font-black uppercase tracking-widest text-slate-500">Vote Replacements</h2>
+                                        <p className="text-xs text-slate-400">Vote for what you want next week</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {foodItems
+                                        .filter(i => (menu ? !menu.items.find(m => m._id === i._id) : true) && i.category === feedbackCategory)
+                                        .map(item => renderFoodCard(
+                                            item,
+                                            replacementItems.includes(item._id),
+                                            () => toggleSelection(item._id, replacementItems, setReplacementItems, 3),
+                                            true
+                                        ))
+                                    }
+                                </div>
+                                {replacementItems.length > 0 && (
+                                    <button
+                                        onClick={submitReplacement}
+                                        className="mt-6 bg-secondary hover:bg-green-600 text-white px-6 py-2.5 rounded-xl font-bold uppercase tracking-wide text-xs shadow-lg shadow-green-500/20 transition-all"
+                                    >
+                                        Submit Replacement Vote
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )}
+
+                </div>
+            </main>
+
+            {/* Dark Mode Toggle */}
+            <button
+                className="fixed top-6 right-6 z-50 p-2.5 bg-white/80 dark:bg-slate-800/80 backdrop-blur shadow-xl border border-slate-200 dark:border-slate-700 rounded-xl hover:scale-105 transition-transform"
+                onClick={toggleDarkMode}
+            >
+                <span className={`material-symbols-outlined ${darkMode ? 'hidden' : 'block'} text-slate-600`}>dark_mode</span>
+                <span className={`material-symbols-outlined ${darkMode ? 'block' : 'hidden'} text-yellow-400`}>light_mode</span>
+            </button>
         </div>
     );
 };
