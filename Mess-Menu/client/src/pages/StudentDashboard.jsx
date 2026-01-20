@@ -67,6 +67,43 @@ const StudentDashboard = () => {
         }
     };
 
+    const toggleReplacementSelection = (id, category) => {
+        if (replacementItems.includes(id)) {
+            setReplacementItems(replacementItems.filter(i => i !== id));
+        } else {
+            // Count disliked items in THIS category
+            const dislikedCountInCategory = dislikedItems.filter(itemId => {
+                const item = foodItems.find(f => f._id === itemId);
+                // Ideally look up item from menu or foodItems. Disliked items come from menu.
+                // But menu items should be in foodItems too (details). 
+                // Wait, menu.items has the category details.
+                const linkedItem = foodItems.find(f => f._id === itemId);
+                // Or easier: current view is filtered by feedbackCategory. 
+                // But dislikedItems is global list of IDs.
+                // We need to know which disliked items belong to the current category.
+                return linkedItem && linkedItem.category === category;
+            }).length;
+
+            if (dislikedCountInCategory === 0) {
+                alert(`You must dislike at least one item in ${category} to select a replacement.`);
+                return;
+            }
+
+            // Count replacement items in THIS category
+            const replacementCountInCategory = replacementItems.filter(itemId => {
+                const item = foodItems.find(f => f._id === itemId);
+                return item && item.category === category;
+            }).length;
+
+            if (replacementCountInCategory >= dislikedCountInCategory) {
+                alert(`You can only select ${dislikedCountInCategory} replacement item(s) for ${category} because you disliked ${dislikedCountInCategory} item(s).`);
+                return;
+            }
+
+            setReplacementItems([...replacementItems, id]);
+        }
+    };
+
     const toggleMonthlySelection = (id, category) => {
         if (selectedItems.includes(id)) {
             setSelectedItems(selectedItems.filter(i => i !== id));
@@ -485,7 +522,7 @@ const StudentDashboard = () => {
                                         .map(item => renderFoodCard(
                                             item,
                                             replacementItems.includes(item._id),
-                                            () => toggleSelection(item._id, replacementItems, setReplacementItems, 3),
+                                            () => toggleReplacementSelection(item._id, item.category),
                                             true
                                         ))
                                     }

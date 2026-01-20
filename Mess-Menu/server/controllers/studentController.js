@@ -100,16 +100,11 @@ exports.voteReplacement = async (req, res) => {
 
 exports.getMenu = async (req, res) => {
     try {
-        const { month, week } = req.query;
-        // Find the active menu for the specific week, or the monthly base menu if week 1
-        // Logic: if week > 1, maybe search for a menu with that week?
-        // Our lockMenu creates week: 1.
-        // If we generate weekly menus, we should find specific week.
+        const { month, week = 1 } = req.query; // Default to week 1 if not provided
+        // Find the active menu for the specific week
         const menu = await Menu.findOne({ month, week }).populate('items');
 
         if (!menu) {
-            // Fallback to week 1 if not specific week menu? 
-            // Or return 404. Let's return 404 for now.
             return res.status(404).json({ message: 'Menu not found for this period' });
         }
         res.json(menu);
