@@ -4,12 +4,22 @@ const Vote = require('../models/Vote');
 
 exports.addFoodItem = async (req, res) => {
     try {
-        const { name, category, image } = req.body;
-        const newItem = new FoodItem({ name, category, image });
+        const { name, category, image, dietType } = req.body;
+        const newItem = new FoodItem({ name, category, image, dietType });
         await newItem.save();
         res.status(201).json(newItem);
     } catch (error) {
         res.status(500).json({ message: 'Error adding food item', error: error.message });
+    }
+};
+
+exports.deleteFoodItem = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await FoodItem.findByIdAndDelete(id);
+        res.json({ message: 'Food item deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting food item', error: error.message });
     }
 };
 

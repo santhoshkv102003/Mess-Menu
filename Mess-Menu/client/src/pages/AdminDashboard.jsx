@@ -46,6 +46,18 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleDeleteItem = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this item?')) return;
+        try {
+            await api.delete(`/admin/food-item/${id}`);
+            // Optimistically remove from UI
+            setFoodItems(prev => prev.filter(item => item._id !== id));
+        } catch (err) {
+            console.error(err);
+            alert('Error deleting item');
+        }
+    };
+
     const handleGenerateMonthly = async () => {
         try {
             const month = new Date().toISOString().slice(0, 7); // YYYY-MM
@@ -209,6 +221,16 @@ const AdminDashboard = () => {
                                                         }`}>
                                                         {item.dietType || 'Veg'}
                                                     </div>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDeleteItem(item._id);
+                                                        }}
+                                                        className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transform scale-75 group-hover:scale-100 transition-all duration-200 shadow-lg hover:bg-red-600 z-10"
+                                                        title="Delete Item"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                                                    </button>
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
                                                     <div className="absolute bottom-0 left-0 right-0 p-3">
                                                         <p className="text-xs text-slate-300 font-medium mb-0.5 uppercase tracking-wide">{item.category}</p>
@@ -242,6 +264,16 @@ const AdminDashboard = () => {
                                                             }`}>
                                                             {item.dietType || 'Veg'}
                                                         </div>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteItem(item._id);
+                                                            }}
+                                                            className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transform scale-75 group-hover:scale-100 transition-all duration-200 shadow-lg hover:bg-red-600 z-10"
+                                                            title="Delete Item"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                                                        </button>
                                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
                                                         <div className="absolute bottom-0 left-0 right-0 p-3">
                                                             <p className="text-xs text-slate-300 font-medium mb-0.5 uppercase tracking-wide">{item.category}</p>

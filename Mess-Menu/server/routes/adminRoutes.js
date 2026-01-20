@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { addFoodItem, getFoodItems, lockMenu, getVotes, generateMonthlyMenu, generateWeeklyReplacement } = require('../controllers/adminController');
+const { addFoodItem, deleteFoodItem, getFoodItems, lockMenu, getVotes, generateMonthlyMenu, generateWeeklyReplacement } = require('../controllers/adminController');
 const auth = require('../middleware/authMiddleware');
 
 // Middleware to check if user is admin
@@ -12,6 +12,7 @@ const adminAuth = (req, res, next) => {
 };
 
 router.post('/food-item', auth, adminAuth, addFoodItem);
+router.delete('/food-item/:id', auth, adminAuth, deleteFoodItem);
 router.get('/food-items', auth, getFoodItems);
 router.post('/menu', auth, adminAuth, lockMenu);
 router.get('/votes', auth, adminAuth, getVotes);
