@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-// import '../App.css'; // Commenting out to prefer Tailwind styles
 
 const StudentDashboard = () => {
     const { logout, user } = useAuth();
@@ -22,7 +21,9 @@ const StudentDashboard = () => {
     useEffect(() => {
         fetchFoodItems();
         fetchMenu();
-        // Check system preference or localStorage for dark mode in a real app
+        if (document.documentElement.classList.contains('dark')) {
+            setDarkMode(true);
+        }
     }, []);
 
     const toggleDarkMode = () => {
@@ -166,8 +167,8 @@ const StudentDashboard = () => {
             <div className={`p-2.5 ${isSelected ? 'bg-primary/5 dark:bg-primary/10' : 'bg-white dark:bg-slate-800'}`}>
                 <h3 className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate mb-2">{item.name}</h3>
                 <button className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all duration-200 ${isSelected
-                        ? 'bg-primary text-white shadow-sm'
-                        : 'bg-slate-50 dark:bg-slate-700/50 hover:bg-primary/10 hover:text-primary border border-slate-200 dark:border-slate-600'
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'bg-slate-50 dark:bg-slate-700/50 hover:bg-primary/10 hover:text-primary border border-slate-200 dark:border-slate-600'
                     }`}>
                     {isSelected ? (
                         <>
@@ -197,10 +198,6 @@ const StudentDashboard = () => {
                         <span className="text-xl font-bold tracking-tight">Smart Mess</span>
                     </div>
                     <nav className="space-y-1">
-                        {/* <a className={`sidebar-item ${activeTab === 'home' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`} href="#" onClick={() => setActiveTab('vote')}>
-                            <span className="material-symbols-outlined">home</span>
-                            <span className="font-medium">Home</span>
-                        </a> */}
                         <button className={`sidebar-item w-full ${activeTab === 'vote' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`} onClick={() => setActiveTab('vote')}>
                             <span className="material-symbols-outlined">how_to_vote</span>
                             <span className="font-medium">Vote</span>
@@ -213,13 +210,17 @@ const StudentDashboard = () => {
                             <span className="material-symbols-outlined">chat_bubble</span>
                             <span className="font-medium">Feedback</span>
                         </button>
-                        {/* <button className="sidebar-item w-full text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
-                            <span className="material-symbols-outlined">person</span>
-                            <span className="font-medium">Profile</span>
-                        </button> */}
                     </nav>
                 </div>
                 <div className="mt-auto p-6 border-t border-slate-200 dark:border-slate-800">
+                    <button
+                        onClick={toggleDarkMode}
+                        className="flex items-center gap-3 w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors mb-4"
+                    >
+                        <span className="material-symbols-outlined">{darkMode ? 'light_mode' : 'dark_mode'}</span>
+                        <span className="text-sm font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
+                    </button>
+
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 overflow-hidden">
                             <span className="material-symbols-outlined">person</span>
@@ -241,9 +242,18 @@ const StudentDashboard = () => {
                 {/* Header */}
                 <header className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-6 sticky top-0 z-20">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                        <div>
-                            <h1 className="text-2xl font-black tracking-tight uppercase">Rapid Selection Board</h1>
-                            <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5 font-medium">Quick tap to vote for next month's menu.</p>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-2xl font-black tracking-tight uppercase">Rapid Selection Board</h1>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5 font-medium">Quick tap to vote for next month's menu.</p>
+                            </div>
+                            {/* Mobile Dark Mode Toggle */}
+                            <button
+                                onClick={toggleDarkMode}
+                                className="md:hidden p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                            >
+                                <span className="material-symbols-outlined">{darkMode ? 'light_mode' : 'dark_mode'}</span>
+                            </button>
                         </div>
 
                         {(activeTab === 'vote' || activeTab === 'feedback') && (
@@ -271,8 +281,8 @@ const StudentDashboard = () => {
                                                 key={cat}
                                                 onClick={() => activeTab === 'vote' ? setActiveCategory(cat) : setFeedbackCategory(cat)}
                                                 className={`flex-1 sm:flex-none px-5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${isSelected
-                                                        ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white'
-                                                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                                    ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white'
+                                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                                     }`}
                                             >
                                                 {cat}
@@ -403,7 +413,7 @@ const StudentDashboard = () => {
                                 </div>
 
                                 {menu ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                                         {menu.items
                                             .filter(item => item.category === feedbackCategory)
                                             .map(item => renderFoodCard(
@@ -438,7 +448,7 @@ const StudentDashboard = () => {
                                         <p className="text-xs text-slate-400">Vote for what you want next week</p>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                                     {foodItems
                                         .filter(i => (menu ? !menu.items.find(m => m._id === i._id) : true) && i.category === feedbackCategory)
                                         .map(item => renderFoodCard(
@@ -463,15 +473,7 @@ const StudentDashboard = () => {
 
                 </div>
             </main>
-
-            {/* Dark Mode Toggle */}
-            <button
-                className="fixed top-6 right-6 z-50 p-2.5 bg-white/80 dark:bg-slate-800/80 backdrop-blur shadow-xl border border-slate-200 dark:border-slate-700 rounded-xl hover:scale-105 transition-transform"
-                onClick={toggleDarkMode}
-            >
-                <span className={`material-symbols-outlined ${darkMode ? 'hidden' : 'block'} text-slate-600`}>dark_mode</span>
-                <span className={`material-symbols-outlined ${darkMode ? 'block' : 'hidden'} text-yellow-400`}>light_mode</span>
-            </button>
+            {/* Removed the fixed floating "Dark Mode" button from here */}
         </div>
     );
 };
