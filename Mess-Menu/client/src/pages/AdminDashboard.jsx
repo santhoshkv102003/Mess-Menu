@@ -69,9 +69,9 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div className="flex bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display transition-colors duration-300">
+        <div className="flex bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 h-screen overflow-hidden font-display transition-colors duration-300">
             {/* Sidebar (Admin) */}
-            <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-screen shrink-0 hidden md:flex sticky top-0">
+            <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full shrink-0 hidden md:flex">
                 <div className="p-6">
                     <div className="flex items-center gap-2 mb-8">
                         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
@@ -122,7 +122,7 @@ const AdminDashboard = () => {
                     </div>
                 </header>
 
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 scrollbar-hide pb-32">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-32">
 
                     {activeTab === 'food' && (
                         <div className="max-w-6xl mx-auto space-y-8">
@@ -186,32 +186,73 @@ const AdminDashboard = () => {
                             </div>
 
                             {/* Food Grid */}
-                            <div>
-                                <h3 className="text-lg font-bold mb-4 px-1">All Food Items ({foodItems.length})</h3>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                    {foodItems.map(item => (
-                                        <div key={item._id} className="group relative bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
-                                            <div className="relative aspect-square bg-slate-100 dark:bg-slate-900 overflow-hidden">
-                                                {item.image ? (
-                                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
-                                                        <span className="material-symbols-outlined text-4xl">restaurant</span>
+                            {/* Food Grid */}
+                            <div className="space-y-12">
+                                {/* Veg Grid */}
+                                <div>
+                                    <div className="flex items-center gap-3 mb-6 px-1">
+                                        <div className="w-1.5 h-6 bg-secondary rounded-full"></div>
+                                        <h3 className="text-lg font-bold flex items-center gap-2">Vegetarian <span className="text-slate-400 text-sm font-normal">({foodItems.filter(i => i.dietType !== 'Non-Veg').length})</span></h3>
+                                    </div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                        {foodItems.filter(item => item.dietType !== 'Non-Veg').map(item => (
+                                            <div key={item._id} className="group relative bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                                                <div className="relative aspect-square bg-slate-100 dark:bg-slate-900 overflow-hidden">
+                                                    {item.image ? (
+                                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
+                                                            <span className="material-symbols-outlined text-4xl">restaurant</span>
+                                                        </div>
+                                                    )}
+                                                    <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${item.dietType === 'Non-Veg' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+                                                        }`}>
+                                                        {item.dietType || 'Veg'}
                                                     </div>
-                                                )}
-                                                <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${item.dietType === 'Non-Veg' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
-                                                    }`}>
-                                                    {item.dietType || 'Veg'}
-                                                </div>
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
-                                                <div className="absolute bottom-0 left-0 right-0 p-3">
-                                                    <p className="text-xs text-slate-300 font-medium mb-0.5 uppercase tracking-wide">{item.category}</p>
-                                                    <h3 className="text-white font-bold text-sm leading-tight">{item.name}</h3>
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
+                                                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                                                        <p className="text-xs text-slate-300 font-medium mb-0.5 uppercase tracking-wide">{item.category}</p>
+                                                        <h3 className="text-white font-bold text-sm leading-tight">{item.name}</h3>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
+
+                                {/* Non-Veg Grid */}
+                                {foodItems.some(i => i.dietType === 'Non-Veg') && (
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-6 px-1">
+                                            <div className="w-1.5 h-6 bg-red-500 rounded-full"></div>
+                                            <h3 className="text-lg font-bold flex items-center gap-2">Non-Vegetarian <span className="text-slate-400 text-sm font-normal">({foodItems.filter(i => i.dietType === 'Non-Veg').length})</span></h3>
+                                        </div>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                            {foodItems.filter(item => item.dietType === 'Non-Veg').map(item => (
+                                                <div key={item._id} className="group relative bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                                                    <div className="relative aspect-square bg-slate-100 dark:bg-slate-900 overflow-hidden">
+                                                        {item.image ? (
+                                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
+                                                                <span className="material-symbols-outlined text-4xl">restaurant</span>
+                                                            </div>
+                                                        )}
+                                                        <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${item.dietType === 'Non-Veg' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+                                                            }`}>
+                                                            {item.dietType || 'Veg'}
+                                                        </div>
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
+                                                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                                                            <p className="text-xs text-slate-300 font-medium mb-0.5 uppercase tracking-wide">{item.category}</p>
+                                                            <h3 className="text-white font-bold text-sm leading-tight">{item.name}</h3>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
