@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { addFoodItem, deleteFoodItem, getFoodItems, lockMenu, getVotes, generateMonthlyMenu, generateWeeklyReplacement } = require('../controllers/adminController');
+const { addFoodItem, deleteFoodItem, getFoodItems, lockMenu, getVotes, generateMonthlyMenu, generateWeeklyReplacement, getFoodAnalytics } = require('../controllers/adminController');
 const auth = require('../middleware/authMiddleware');
 
 // Middleware to check if user is admin
@@ -18,5 +18,6 @@ router.post('/menu', auth, adminAuth, lockMenu);
 router.get('/votes', auth, adminAuth, getVotes);
 router.get('/generate-monthly', auth, adminAuth, generateMonthlyMenu);
 router.get('/generate-weekly', auth, adminAuth, generateWeeklyReplacement);
+router.get('/analytics', auth, adminAuth, getFoodAnalytics);
 
 module.exports = router;

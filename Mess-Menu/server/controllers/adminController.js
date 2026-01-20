@@ -162,3 +162,37 @@ exports.generateWeeklyReplacement = async (req, res) => {
         res.status(500).json({ message: 'Error generating replacement', error: error.message });
     }
 };
+
+exports.getFoodAnalytics = async (req, res) => {
+    try {
+        const { month } = req.query; // Expects "YYYY-MM", defaults to current if needed, but let's make it optional or handle in frontend
+
+        // If no month provided, maybe default to current or return all?
+        // Let's assume month is passed or we default to current month
+        const targetMonth = month || new Date().toISOString().slice(0, 7);
+
+        const votes = await Vote.find({ month: targetMonth, type: 'monthly_selection' });
+
+        const itemCounts = {};
+        votes.forEach(vote => {
+            vote.items.forEach(itemId => {
+                itemCounts[itemId] = (itemCounts[itemId] || 0) + 1;
+            });
+        });
+
+        const allItems = await FoodItem.find();
+
+        // return list with vote counts
+        const analyticsData = allItems.map(item => ({
+            ...item.toObject(),
+            voteCount: itemCounts[item._id] || 0
+        }));
+
+        // Sort by vote count descending
+        analyticsData.sort((a, b) => b.voteCount - a.voteCount);
+
+        res.json(analyticsData);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching analytics', error: error.message });
+    }
+};
