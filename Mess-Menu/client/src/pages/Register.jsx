@@ -29,7 +29,7 @@ const Register = () => {
             if (formData.role === 'admin') navigate('/admin');
             else navigate('/student');
         } catch (error) {
-            alert('Registration Failed');
+            alert(error.response?.data?.message || 'Registration Failed');
         }
     };
 
