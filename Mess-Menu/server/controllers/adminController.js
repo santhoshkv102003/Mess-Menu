@@ -40,15 +40,24 @@ exports.lockMenu = async (req, res) => {
             return res.status(400).json({ message: 'Menu must have exactly 28 items' });
         }
 
-        const newMenu = new Menu({
-            month,
-            week: 1,
-            items,
-            isLocked: true
-        });
+        // Use findOneAndUpdate with upsert to update existing menu or create new one
+        // This prevents duplicate menus for the same month/week
+        const menu = await Menu.findOneAndUpdate(
+            { month, week: 1 }, // Find menu for this month and week
+            {
+                month,
+                week: 1,
+                items,
+                isLocked: true
+            },
+            {
+                new: true, // Return the updated document
+                upsert: true, // Create if doesn't exist
+                runValidators: true // Run schema validators
+            }
+        );
 
-        await newMenu.save();
-        res.status(201).json({ message: 'Monthly menu locked', menu: newMenu });
+        res.status(201).json({ message: 'Monthly menu locked', menu });
     } catch (error) {
         res.status(500).json({ message: 'Error locking menu', error: error.message });
     }
@@ -106,6 +115,7 @@ exports.generateMonthlyMenu = async (req, res) => {
         const weekMenu = [];
         const flatList = [];
 
+        // Build the flat list in the correct order: [Mon-B, Mon-L, Mon-S, Mon-D, Tue-B, Tue-L, ...]
         for (let i = 0; i < 7; i++) {
             const dayMenu = {
                 day: days[i],
@@ -115,10 +125,13 @@ exports.generateMonthlyMenu = async (req, res) => {
                 dinner: topItems['Dinner'][i] || null
             };
             weekMenu.push(dayMenu);
-            if (dayMenu.breakfast) flatList.push(dayMenu.breakfast);
-            if (dayMenu.lunch) flatList.push(dayMenu.lunch);
-            if (dayMenu.snack) flatList.push(dayMenu.snack);
-            if (dayMenu.dinner) flatList.push(dayMenu.dinner);
+
+            // Add items in order: breakfast, lunch, snack, dinner for each day
+            // CRITICAL: Push all items including nulls to maintain exact 28-item structure
+            flatList.push(dayMenu.breakfast);
+            flatList.push(dayMenu.lunch);
+            flatList.push(dayMenu.snack);
+            flatList.push(dayMenu.dinner);
         }
 
         res.json({ suggestedItems: flatList, weekMenu, counts: itemCounts });

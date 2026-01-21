@@ -10,6 +10,7 @@ const AdminDashboard = () => {
     const [newItem, setNewItem] = useState({ name: '', category: 'Breakfast', dietType: 'Veg', image: '' });
     const [menuData, setMenuData] = useState(null);
     const [analyticsData, setAnalyticsData] = useState(null);
+    const publishButtonRef = React.useRef(null);
 
     // Dark mode state
     const [darkMode, setDarkMode] = useState(false);
@@ -64,6 +65,11 @@ const AdminDashboard = () => {
             const month = new Date().toISOString().slice(0, 7); // YYYY-MM
             const res = await api.get(`/admin/generate-monthly?month=${month}`);
             setMenuData(res.data);
+
+            // Scroll to publish button after menu is generated
+            setTimeout(() => {
+                publishButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
         } catch (err) {
             alert('Error generating menu');
         }
@@ -88,13 +94,33 @@ const AdminDashboard = () => {
 
     const handleLockMenu = async () => {
         if (!menuData || !menuData.suggestedItems) return;
+
+        // Filter out null items and get only valid IDs
+        const validItems = menuData.suggestedItems.filter(item => item !== null);
+        const itemIds = validItems.map(i => i._id);
+
+        // Validate we have exactly 28 items
+        if (itemIds.length !== 28) {
+            alert(`❌ Cannot lock menu: Need exactly 28 items, but only have ${itemIds.length} valid items.`);
+            return;
+        }
+
+        // Confirmation dialog
+        const confirmed = window.confirm(
+            `Are you sure you want to lock and publish this menu for ${new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}?\n\nThis will make the menu visible to all students.`
+        );
+
+        if (!confirmed) return;
+
         try {
             const month = new Date().toISOString().slice(0, 7);
-            const itemIds = menuData.suggestedItems.map(i => i._id);
             await api.post('/admin/menu', { month, items: itemIds });
-            alert('Menu Locked Successfully!');
+
+            // Clear menu data and show success message
+            setMenuData(null);
+            alert('✅ Menu locked and published successfully!\n\nStudents can now view this menu in their dashboard.');
         } catch (err) {
-            alert('Error locking menu');
+            alert('❌ Error locking menu: ' + (err.response?.data?.message || err.message));
         }
     };
 
@@ -327,7 +353,7 @@ const AdminDashboard = () => {
                                         className="px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-all flex items-center gap-2"
                                     >
                                         <span className="material-symbols-outlined">auto_awesome</span>
-                                        Generate Suggestion
+                                        {menuData ? 'Regenerate Menu' : 'Generate Suggestion'}
                                     </button>
                                 </div>
 
@@ -361,10 +387,11 @@ const AdminDashboard = () => {
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <div className="flex justify-end">
+                                        <div className="flex justify-end p-4">
                                             <button
+                                                ref={publishButtonRef}
                                                 onClick={handleLockMenu}
-                                                className="px-8 py-3 bg-secondary text-white font-bold rounded-xl shadow-lg shadow-secondary/20 hover:scale-105 transition-all flex items-center gap-2"
+                                                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
                                             >
                                                 <span className="material-symbols-outlined">lock</span>
                                                 Lock & Publish Menu

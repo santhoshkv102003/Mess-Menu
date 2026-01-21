@@ -8,6 +8,7 @@ const StudentDashboard = () => {
     const [foodItems, setFoodItems] = useState([]);
     const [selectedItems, setSelectedItems] = useState([]); // IDs for monthly vote
     const [menu, setMenu] = useState(null);
+    const [menuLoading, setMenuLoading] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
 
     // For feedback/replacement
@@ -47,11 +48,15 @@ const StudentDashboard = () => {
 
     const fetchMenu = async () => {
         try {
+            setMenuLoading(true);
             const month = new Date().toISOString().slice(0, 7);
             const res = await api.get(`/student/menu?month=${month}`);
             setMenu(res.data);
         } catch (err) {
             console.log('No menu found yet');
+            setMenu(null);
+        } finally {
+            setMenuLoading(false);
         }
     };
 
@@ -426,10 +431,29 @@ const StudentDashboard = () => {
                     {activeTab === 'menu' && (
                         <div className="max-w-4xl mx-auto">
                             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
-                                <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-                                    <h2 className="text-xl font-bold">Menu for {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
+                                <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                                    <div>
+                                        <h2 className="text-xl font-bold">Menu for {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
+                                        <p className="text-xs text-slate-500 mt-1">Weekly menu published by admin</p>
+                                    </div>
+                                    <button
+                                        onClick={fetchMenu}
+                                        disabled={menuLoading}
+                                        className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title="Refresh menu"
+                                    >
+                                        <span className={`material-symbols-outlined text-lg ${menuLoading ? 'animate-spin' : ''}`}>
+                                            {menuLoading ? 'progress_activity' : 'refresh'}
+                                        </span>
+                                        <span className="text-sm font-bold">Refresh</span>
+                                    </button>
                                 </div>
-                                {menu ? (
+                                {menuLoading ? (
+                                    <div className="p-12 text-center text-slate-500">
+                                        <span className="material-symbols-outlined text-4xl mb-2 animate-spin">progress_activity</span>
+                                        <p>Loading menu...</p>
+                                    </div>
+                                ) : menu ? (
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-sm">
                                             <thead className="bg-slate-50 dark:bg-slate-900/50">
@@ -460,7 +484,14 @@ const StudentDashboard = () => {
                                 ) : (
                                     <div className="p-12 text-center text-slate-500">
                                         <span className="material-symbols-outlined text-4xl mb-2">restaurant_menu</span>
-                                        <p>No menu active for this month.</p>
+                                        <p className="font-medium mb-1">No menu available for this month</p>
+                                        <p className="text-xs text-slate-400">The admin hasn't published a menu yet. Check back later!</p>
+                                        <button
+                                            onClick={fetchMenu}
+                                            className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-all"
+                                        >
+                                            Check Again
+                                        </button>
                                     </div>
                                 )}
                             </div>
