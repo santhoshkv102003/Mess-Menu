@@ -142,6 +142,20 @@ const StudentDashboard = () => {
             }
 
             setSelectedItems([...selectedItems, id]);
+
+            // Auto-navigate to next category when 7 items are selected
+            const newCategorySelection = [...currentCategorySelection, id];
+            if (newCategorySelection.length === 7) {
+                // Move to next category
+                const categories = ['Breakfast', 'Lunch', 'Snack', 'Dinner'];
+                const currentIndex = categories.indexOf(category);
+                if (currentIndex < categories.length - 1) {
+                    // Small delay for better UX
+                    setTimeout(() => {
+                        setActiveCategory(categories[currentIndex + 1]);
+                    }, 600);
+                }
+            }
         }
     };
 
