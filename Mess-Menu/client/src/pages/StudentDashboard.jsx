@@ -386,6 +386,15 @@ const StudentDashboard = () => {
                             >
                                 <span className="material-symbols-outlined">{darkMode ? 'light_mode' : 'dark_mode'}</span>
                             </button>
+
+                            {/* Mobile Logout Button */}
+                            <button
+                                onClick={logout}
+                                className="md:hidden p-2 rounded-full bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+                                title="Logout"
+                            >
+                                <span className="material-symbols-outlined">logout</span>
+                            </button>
                         </div>
 
                         {(activeTab === 'vote' || activeTab === 'feedback') && (

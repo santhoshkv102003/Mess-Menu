@@ -46,25 +46,25 @@ const Register = () => {
 
             <main className="w-full max-w-[1100px] flex flex-col md:flex-row shadow-2xl rounded-3xl overflow-hidden m-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 mx-auto">
                 {/* Left Side - Image/Hero - Stacked on Mobile */}
-                <div className="relative w-full md:w-1/2 h-64 md:h-auto overflow-hidden bg-slate-100 dark:bg-slate-800">
+                <div className="relative w-full md:w-1/2 h-40 md:h-auto overflow-hidden bg-slate-100 dark:bg-slate-800">
                     <img
                         alt="Fresh healthy dining experience"
                         className="absolute inset-0 w-full h-full object-cover"
                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZE3mPWqpF9ajGeovBTd1Ac89zSoLEXBFF1to8MnR_HkXRhRAbLC_dLb7oAGPP9sfp1PnExI-0Rz6QMEVoWJ0_YT3i70AmrYhRU-Szuqwz4tiMEdzEBDLmFCW5ipjyHLYRjyy-yNhNVcdeOkeladS29pPf48ZLSaB2jCCwoas7guucO7wq0pIj_qy3C5jOM5IWbyr1f6jU0dXTrJirnFd9O072TZrrppJVIXAcbCK4covHJWq5-2kyZSwlx3m6z78B-tey2zGLJcEV"
                     />
                     <div className="absolute inset-0 login-image-gradient"></div>
-                    <div className="relative h-full flex flex-col justify-between p-10 text-white z-10">
+                    <div className="relative h-full flex flex-col justify-between p-6 md:p-10 text-white z-10">
                         <div className="flex items-center gap-2">
                             <div className="bg-white/20 backdrop-blur-md p-2 rounded-xl">
-                                <span className="material-icons-round text-white text-3xl">restaurant</span>
+                                <span className="material-icons-round text-white text-2xl md:text-3xl">restaurant</span>
                             </div>
-                            <span className="text-2xl font-bold tracking-tight">Smart Mess</span>
+                            <span className="text-xl md:text-2xl font-bold tracking-tight">Smart Mess</span>
                         </div>
-                        <div>
+                        <div className="hidden md:block">
                             <h1 className="text-4xl font-extrabold mb-4 leading-tight">Join the<br />Community.</h1>
                             <p className="text-lg text-white/90 font-medium max-w-sm">Create your account to start voting for your daily meals.</p>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="hidden md:flex items-center gap-4">
                             <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
                                 <p className="text-sm font-medium">✨ Student & Admin Access</p>
                             </div>
@@ -73,7 +73,7 @@ const Register = () => {
                 </div>
 
                 {/* Right Side - Form - Full Width on Mobile */}
-                <div className="w-full md:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center bg-white dark:bg-slate-900 transition-colors">
+                <div className="w-full md:w-1/2 p-6 pb-8 md:p-12 lg:p-16 flex flex-col justify-center bg-white dark:bg-slate-900 transition-colors">
                     <div className="max-w-md mx-auto w-full">
                         <div className="mb-8">
                             <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Create Account</h2>
