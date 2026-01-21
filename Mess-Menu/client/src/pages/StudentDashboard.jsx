@@ -277,7 +277,7 @@ const StudentDashboard = () => {
     );
 
     return (
-        <div className="flex h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 overflow-hidden font-display">
+        <div className="flex h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
             {/* Mobile Menu Overlay */}
             {mobileMenuOpen && (
                 <div
@@ -361,7 +361,7 @@ const StudentDashboard = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col min-h-0 relative">
+            <main className="flex-1 flex flex-col h-screen w-full md:w-auto">
                 {/* Header */}
                 <header className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-4 md:p-6 sticky top-0 z-20">
                     <div className="flex flex-col gap-4">
@@ -427,7 +427,7 @@ const StudentDashboard = () => {
                     </div>
                 </header>
 
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 scrollbar-hide pb-32">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 pb-32">
 
                     {/* VOTING TAB */}
                     {activeTab === 'vote' && (

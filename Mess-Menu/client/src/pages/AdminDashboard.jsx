@@ -128,7 +128,7 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div className="flex bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 h-screen overflow-hidden font-display transition-colors duration-300">
+        <div className="flex bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 h-screen font-display transition-colors duration-300">
             {/* Mobile Menu Overlay */}
             {mobileMenuOpen && (
                 <div
@@ -204,7 +204,7 @@ const AdminDashboard = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col min-h-0 relative">
+            <main className="flex-1 flex flex-col h-screen w-full md:w-auto">
                 <header className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-4 md:p-6 sticky top-0 z-20 flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         {/* Mobile Menu Button */}
@@ -222,7 +222,7 @@ const AdminDashboard = () => {
                     </div>
                 </header>
 
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-32">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 pb-32">
 
                     {activeTab === 'food' && (
                         <div className="max-w-6xl mx-auto space-y-8">

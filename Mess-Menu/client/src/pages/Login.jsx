@@ -35,7 +35,7 @@ const Login = () => {
     };
 
     return (
-        <div className="bg-background-light dark:bg-background-dark min-h-screen flex items-center justify-center transition-colors duration-300 font-display">
+        <div className="bg-background-light dark:bg-background-dark min-h-screen overflow-y-auto transition-colors duration-300 font-display py-4 md:py-0 md:flex md:items-center md:justify-center">
             {/* Dark Mode Toggle */}
             <button
                 className="fixed top-6 right-6 p-2 rounded-full bg-white dark:bg-slate-800 shadow-md text-slate-600 dark:text-slate-300 hover:scale-110 transition-all z-50"
