@@ -47,7 +47,7 @@ const Login = () => {
 
             <main className="w-full max-w-[1100px] flex flex-col md:flex-row shadow-2xl rounded-3xl overflow-hidden m-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 mx-auto">
                 {/* Left Side - Image/Hero - Stacked on Mobile */}
-                <div className="relative w-full md:w-1/2 h-[150px] md:h-auto overflow-hidden bg-slate-200 dark:bg-slate-800">
+                <div className="relative w-full md:w-1/2 h-64 md:h-auto overflow-hidden bg-slate-200 dark:bg-slate-800">
                     <img
                         alt="Students sharing a meal and engaging in lively conversation in a stylish campus dining hall"
                         className="absolute inset-0 w-full h-full object-cover"
