@@ -15,6 +15,9 @@ const AdminDashboard = () => {
     // Dark mode state
     const [darkMode, setDarkMode] = useState(false);
 
+    // Mobile menu state
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
     useEffect(() => {
         fetchFoodItems();
         if (document.documentElement.classList.contains('dark')) {
@@ -126,33 +129,57 @@ const AdminDashboard = () => {
 
     return (
         <div className="flex bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 h-screen overflow-hidden font-display transition-colors duration-300">
-            {/* Sidebar (Admin) */}
-            <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full shrink-0 hidden md:flex">
+            {/* Mobile Menu Overlay */}
+            {mobileMenuOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+                    onClick={() => setMobileMenuOpen(false)}
+                />
+            )}
+
+            {/* Sidebar (Admin) - Desktop & Mobile Drawer */}
+            <aside className={`
+                fixed md:relative
+                w-64 bg-white dark:bg-slate-900 
+                border-r border-slate-200 dark:border-slate-800 
+                flex flex-col h-full shrink-0 z-50
+                transition-transform duration-300 ease-in-out
+                ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+            `}>
                 <div className="p-6">
-                    <div className="flex items-center gap-2 mb-8">
-                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
-                            <span className="material-icons-round text-xl">admin_panel_settings</span>
+                    <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+                                <span className="material-icons-round text-xl">admin_panel_settings</span>
+                            </div>
+                            <span className="text-xl font-bold tracking-tight">Admin Console</span>
                         </div>
-                        <span className="text-xl font-bold tracking-tight">Admin Console</span>
+                        {/* Close button for mobile */}
+                        <button
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                        >
+                            <span className="material-symbols-outlined">close</span>
+                        </button>
                     </div>
                     <nav className="space-y-1">
                         <button
                             className={`sidebar-item w-full ${activeTab === 'food' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                            onClick={() => setActiveTab('food')}
+                            onClick={() => { setActiveTab('food'); setMobileMenuOpen(false); }}
                         >
                             <span className="material-symbols-outlined">restaurant</span>
                             <span className="font-medium">Manage Food</span>
                         </button>
                         <button
                             className={`sidebar-item w-full ${activeTab === 'menu' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                            onClick={() => setActiveTab('menu')}
+                            onClick={() => { setActiveTab('menu'); setMobileMenuOpen(false); }}
                         >
                             <span className="material-symbols-outlined">calendar_month</span>
                             <span className="font-medium">Menu Generator</span>
                         </button>
                         <button
                             className={`sidebar-item w-full ${activeTab === 'analytics' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                            onClick={() => setActiveTab('analytics')}
+                            onClick={() => { setActiveTab('analytics'); setMobileMenuOpen(false); }}
                         >
                             <span className="material-symbols-outlined">bar_chart</span>
                             <span className="font-medium">Analyze Vote</span>
@@ -178,10 +205,20 @@ const AdminDashboard = () => {
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col min-h-0 relative">
-                <header className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-6 sticky top-0 z-20 flex justify-between items-center">
-                    <div>
-                        <h1 className="text-2xl font-black tracking-tight uppercase">Dashboard</h1>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5 font-medium">Manage food items and generate menus.</p>
+                <header className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-4 md:p-6 sticky top-0 z-20 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        {/* Mobile Menu Button */}
+                        <button
+                            onClick={() => setMobileMenuOpen(true)}
+                            className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                        >
+                            <span className="material-symbols-outlined">menu</span>
+                        </button>
+
+                        <div>
+                            <h1 className="text-lg md:text-2xl font-black tracking-tight uppercase">Dashboard</h1>
+                            <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-0.5 font-medium hidden sm:block">Manage food items and generate menus.</p>
+                        </div>
                     </div>
                 </header>
 

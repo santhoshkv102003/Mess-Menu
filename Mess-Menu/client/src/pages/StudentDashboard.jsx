@@ -20,6 +20,9 @@ const StudentDashboard = () => {
     // Dark mode state
     const [darkMode, setDarkMode] = useState(false);
 
+    // Mobile menu state
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
     useEffect(() => {
         fetchFoodItems();
         fetchMenu();
@@ -275,25 +278,58 @@ const StudentDashboard = () => {
 
     return (
         <div className="flex h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 overflow-hidden font-display">
-            {/* Sidebar */}
-            <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-screen shrink-0 hidden md:flex">
+            {/* Mobile Menu Overlay */}
+            {mobileMenuOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+                    onClick={() => setMobileMenuOpen(false)}
+                />
+            )}
+
+            {/* Sidebar - Desktop & Mobile Drawer */}
+            <aside className={`
+                fixed md:relative
+                w-64 bg-white dark:bg-slate-900 
+                border-r border-slate-200 dark:border-slate-800 
+                flex flex-col h-screen shrink-0 z-50
+                transition-transform duration-300 ease-in-out
+                ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+            `}>
                 <div className="p-6">
-                    <div className="flex items-center gap-2 mb-8">
-                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
-                            <span className="material-icons-round text-xl">restaurant</span>
+                    <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+                                <span className="material-icons-round text-xl">restaurant</span>
+                            </div>
+                            <span className="text-xl font-bold tracking-tight">Smart Mess</span>
                         </div>
-                        <span className="text-xl font-bold tracking-tight">Smart Mess</span>
+                        {/* Close button for mobile */}
+                        <button
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                        >
+                            <span className="material-symbols-outlined">close</span>
+                        </button>
                     </div>
                     <nav className="space-y-1">
-                        <button className={`sidebar-item w-full ${activeTab === 'vote' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`} onClick={() => setActiveTab('vote')}>
+                        <button
+                            className={`sidebar-item w-full ${activeTab === 'vote' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            onClick={() => { setActiveTab('vote'); setMobileMenuOpen(false); }}
+                        >
                             <span className="material-symbols-outlined">how_to_vote</span>
                             <span className="font-medium">Vote</span>
                         </button>
-                        <button className={`sidebar-item w-full ${activeTab === 'menu' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`} onClick={() => setActiveTab('menu')}>
+                        <button
+                            className={`sidebar-item w-full ${activeTab === 'menu' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            onClick={() => { setActiveTab('menu'); setMobileMenuOpen(false); }}
+                        >
                             <span className="material-symbols-outlined">restaurant_menu</span>
                             <span className="font-medium">Menu</span>
                         </button>
-                        <button className={`sidebar-item w-full ${activeTab === 'feedback' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`} onClick={() => setActiveTab('feedback')}>
+                        <button
+                            className={`sidebar-item w-full ${activeTab === 'feedback' ? 'sidebar-item-active' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            onClick={() => { setActiveTab('feedback'); setMobileMenuOpen(false); }}
+                        >
                             <span className="material-symbols-outlined">chat_bubble</span>
                             <span className="font-medium">Feedback</span>
                         </button>
@@ -327,13 +363,22 @@ const StudentDashboard = () => {
             {/* Main Content */}
             <main className="flex-1 flex flex-col min-h-0 relative">
                 {/* Header */}
-                <header className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-6 sticky top-0 z-20">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <header className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-4 md:p-6 sticky top-0 z-20">
+                    <div className="flex flex-col gap-4">
                         <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-2xl font-black tracking-tight uppercase">Rapid Selection Board</h1>
-                                <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5 font-medium">Quick tap to vote for next month's menu.</p>
+                            {/* Mobile Menu Button */}
+                            <button
+                                onClick={() => setMobileMenuOpen(true)}
+                                className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                            >
+                                <span className="material-symbols-outlined">menu</span>
+                            </button>
+
+                            <div className="flex-1 md:flex-none">
+                                <h1 className="text-lg md:text-2xl font-black tracking-tight uppercase">Rapid Selection Board</h1>
+                                <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-0.5 font-medium hidden sm:block">Quick tap to vote for next month's menu.</p>
                             </div>
+
                             {/* Mobile Dark Mode Toggle */}
                             <button
                                 onClick={toggleDarkMode}
@@ -344,7 +389,7 @@ const StudentDashboard = () => {
                         </div>
 
                         {(activeTab === 'vote' || activeTab === 'feedback') && (
-                            <div className="flex flex-col sm:flex-row items-center gap-6">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-6">
                                 {activeTab === 'vote' && (
                                     <div className="w-full sm:w-auto">
                                         <div className="flex items-center justify-between sm:justify-end gap-3 mb-2">
@@ -360,14 +405,14 @@ const StudentDashboard = () => {
                                     </div>
                                 )}
 
-                                <div className="flex bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-xl w-full sm:w-auto overflow-x-auto">
+                                <div className="flex bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-xl w-full sm:w-auto overflow-x-auto scrollbar-hide">
                                     {['Breakfast', 'Lunch', 'Snack', 'Dinner'].map(cat => {
                                         const isSelected = (activeTab === 'vote' ? activeCategory : feedbackCategory) === cat;
                                         return (
                                             <button
                                                 key={cat}
                                                 onClick={() => activeTab === 'vote' ? setActiveCategory(cat) : setFeedbackCategory(cat)}
-                                                className={`flex-1 sm:flex-none px-5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${isSelected
+                                                className={`flex-1 sm:flex-none px-4 md:px-5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all whitespace-nowrap ${isSelected
                                                     ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white'
                                                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                                     }`}
@@ -429,13 +474,14 @@ const StudentDashboard = () => {
                             )}
 
                             {/* Submit Button (Floating) */}
-                            <div className="fixed bottom-8 right-8 z-30">
+                            <div className="fixed bottom-4 md:bottom-8 right-4 md:right-8 z-30">
                                 <button
                                     onClick={submitMonthlyVote}
-                                    className="bg-primary text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest shadow-2xl shadow-primary/40 flex items-center gap-3 transform transition-all hover:scale-105 active:scale-95"
+                                    className="bg-primary text-white px-4 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-black uppercase tracking-widest shadow-2xl shadow-primary/40 flex items-center gap-2 md:gap-3 transform transition-all hover:scale-105 active:scale-95 text-xs md:text-sm"
                                 >
-                                    <span className="material-symbols-outlined">send</span>
-                                    <span>Submit Final Vote</span>
+                                    <span className="material-symbols-outlined text-lg md:text-xl">send</span>
+                                    <span className="hidden sm:inline">Submit Final Vote</span>
+                                    <span className="sm:hidden">Submit</span>
                                 </button>
                             </div>
                         </div>

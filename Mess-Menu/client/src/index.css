@@ -115,3 +115,12 @@ button {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--glass-highlight);
 }
+/* --- Utility Classes --- */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

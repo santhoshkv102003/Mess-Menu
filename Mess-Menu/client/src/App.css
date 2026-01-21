@@ -320,7 +320,7 @@
 
     .food-grid {
         grid-template-columns: 1fr;
-    }
+    }`n    `n    /* Better touch targets for mobile */`n    button {`n        min-height: 44px;`n    }`n    `n    /* Prevent text from being too small on mobile */`n    input, select, textarea {`n        font-size: 16px !important;`n    }
 }
 
 /* --- Premium Tables --- */
