@@ -6,6 +6,17 @@ exports.register = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
 
+        // Check DB connection before proceeding
+        const mongoose = require('mongoose');
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(503).json({ message: 'Database not connected. Please try again shortly.' });
+        }
+
+        // Validate required fields
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: 'Name, email and password are required.' });
+        }
+
         let user = await User.findOne({ email });
         if (user) {
             return res.status(400).json({ message: 'User already exists' });
@@ -28,6 +39,7 @@ exports.register = async (req, res) => {
         res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
 
     } catch (error) {
+        console.error('Register error:', error);
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
@@ -35,6 +47,16 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
+
+        // Check DB connection before proceeding
+        const mongoose = require('mongoose');
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(503).json({ message: 'Database not connected. Please try again shortly.' });
+        }
+
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required.' });
+        }
 
         const user = await User.findOne({ email });
         if (!user) {
@@ -51,6 +73,7 @@ exports.login = async (req, res) => {
         res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
 
     } catch (error) {
+        console.error('Login error:', error);
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };

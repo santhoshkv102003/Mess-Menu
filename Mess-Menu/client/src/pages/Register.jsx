@@ -5,6 +5,8 @@ import { useNavigate, Link } from 'react-router-dom';
 const Register = () => {
     const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'student' });
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const { register } = useAuth();
     const navigate = useNavigate();
 
@@ -24,12 +26,16 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+        setLoading(true);
         try {
             await register(formData.name, formData.email, formData.password, formData.role);
             if (formData.role === 'admin') navigate('/admin');
             else navigate('/student');
         } catch (error) {
-            alert(error.response?.data?.message || 'Registration Failed');
+            setError(error.response?.data?.message || 'Registration Failed. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -80,6 +86,11 @@ const Register = () => {
                             <p className="text-slate-500 dark:text-slate-400">Please fill in the details to register.</p>
                         </div>
                         <form onSubmit={handleSubmit} className="space-y-5">
+                            {error && (
+                                <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-medium">
+                                    {error}
+                                </div>
+                            )}
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" htmlFor="name">Full Name</label>
                                 <div className="relative">
@@ -151,9 +162,9 @@ const Register = () => {
                                 </div>
                             </div>
 
-                            <button className="w-full py-4 px-6 bg-primary hover:opacity-90 text-white font-bold rounded-2xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group mt-2" type="submit">
-                                Create Account
-                                <span className="material-icons-round group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            <button className="w-full py-4 px-6 bg-primary hover:opacity-90 text-white font-bold rounded-2xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group mt-2 disabled:opacity-60 disabled:cursor-not-allowed" type="submit" disabled={loading}>
+                                {loading ? 'Creating Account...' : 'Create Account'}
+                                {!loading && <span className="material-icons-round group-hover:translate-x-1 transition-transform">arrow_forward</span>}
                             </button>
                         </form>
 
